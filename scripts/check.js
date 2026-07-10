@@ -19,7 +19,7 @@ const BANNED = [
   /\bgho_[A-Za-z0-9]{8,}/, /\bsk-[A-Za-z0-9]{8,}/, /\bghp_[A-Za-z0-9]{8,}/,
 ]
 const TEXT_EXT = new Set(['.md', '.js', '.json', '.txt', '.html', '.svg', '.yml', '.yaml', '.sh'])
-const SKIP_DIRS = new Set(['.git', 'node_modules'])
+const SKIP_DIRS = new Set(['.git', 'node_modules', '.superpowers'])
 const MAX_BYTES = 500 * 1024
 
 function* walk(dir) {

@@ -1,0 +1,10 @@
+{
+  "name": "marketing-skills-tools",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test" },
+  "dependencies": {
+    "playwright": "^1.61.1",
+    "sharp": "^0.35.3"
+  }
+}
