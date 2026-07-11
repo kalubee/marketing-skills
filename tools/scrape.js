@@ -38,12 +38,23 @@ try {
         const hx = m[0].toLowerCase(); hexes[hx] = (hexes[hx] || 0) + 1
       }
     }
-    // Also extract from computed rules (for inline styles)
+    // Also extract from computed rules (covers inline styles and external
+    // stylesheets — Chromium serializes cssText colors as rgb()/rgba(), not hex)
+    const toHex = (n) => Number(n).toString(16).padStart(2, '0')
     for (const sheet of document.styleSheets) {
       let rules = []
       try { rules = [...sheet.cssRules] } catch { continue }
-      for (const r of rules) for (const m of (r.cssText || '').matchAll(/#[0-9a-fA-F]{6}\b/g)) {
-        const hx = m[0].toLowerCase(); hexes[hx] = (hexes[hx] || 0) + 1
+      for (const r of rules) {
+        const text = r.cssText || ''
+        for (const m of text.matchAll(/#[0-9a-fA-F]{6}\b/g)) {
+          const hx = m[0].toLowerCase(); hexes[hx] = (hexes[hx] || 0) + 1
+        }
+        for (const m of text.matchAll(/rgba?\(\s*(\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})(?:\s*,\s*([\d.]+))?\s*\)/g)) {
+          const alpha = m[4]
+          if (alpha !== undefined && Number(alpha) !== 1) continue
+          const hx = `#${toHex(m[1])}${toHex(m[2])}${toHex(m[3])}`
+          hexes[hx] = (hexes[hx] || 0) + 1
+        }
       }
     }
     const navRoot = document.querySelector('nav') || document.querySelector('header')
