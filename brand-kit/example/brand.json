@@ -1,0 +1,50 @@
+{
+  "id": "acme",
+  "name": "Acme Home & Living",
+  "status": "example",
+  "provenance": "Fictional brand shipped with this repo to demonstrate the brand-kit schema. Every value is invented.",
+  "email_layout": {
+    "width_px": 724,
+    "margin_px": 50,
+    "module_gap_px": 50,
+    "height": "content-driven (varies with number of modules)",
+    "safe_zone_note": "Keep all copy and logos inside the margin on all four sides."
+  },
+  "palette": {
+    "brand_primary": "#2F6F4F",
+    "brand_secondary": "#7FB69B",
+    "ink": "#1A1A1A",
+    "muted": "#6B6B6B",
+    "hairline": "#E4E4E4",
+    "bg": "#FFFFFF",
+    "band_bg": "#F2EFE9",
+    "sale_accent": "#C0392B"
+  },
+  "type": {
+    "display_stack": "'Helvetica Neue', Helvetica, Arial, sans-serif",
+    "body_stack": "'Helvetica Neue', Helvetica, Arial, sans-serif",
+    "headline_weight": 800,
+    "headline_transform": "uppercase",
+    "headline_tracking_px": 0.5
+  },
+  "logo": {
+    "present": true,
+    "wordmark": "ACME",
+    "_note": "No logo asset — render a text lockup. Drop a real logo PNG in refs/ and knock it out to transparent with tools/knockout.js."
+  },
+  "footer": {
+    "company": "Acme Home & Living",
+    "address": "100 Example Street, Springfield",
+    "boilerplate": "You are receiving this email because you subscribed to Acme offers.",
+    "links": ["Shop Online", "Find a Store", "Unsubscribe"]
+  },
+  "cta": {
+    "style": "solid",
+    "bg": "#2F6F4F",
+    "text": "#FFFFFF",
+    "radius_px": 2,
+    "transform": "uppercase"
+  },
+  "store": null,
+  "_store_note": "Set { \"base_url\": \"https://...\", \"platform\": \"shopify\" } to let skills resolve product links against a live store or a products.json snapshot."
+}

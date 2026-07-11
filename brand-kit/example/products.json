@@ -1,0 +1,5 @@
+[
+  { "name": "Harlow 3-Seat Sofa", "url": "https://acme.example/products/harlow-3-seat-sofa", "handle": "harlow-3-seat-sofa" },
+  { "name": "Nordholm Queen Bed", "url": "https://acme.example/products/nordholm-queen-bed", "handle": "nordholm-queen-bed" },
+  { "name": "Vera Dining Set",    "url": "https://acme.example/products/vera-dining-set",    "handle": "vera-dining-set" }
+]

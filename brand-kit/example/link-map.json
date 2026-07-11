@@ -1,0 +1,9 @@
+{
+  "brand": "acme",
+  "base_url": "https://acme.example",
+  "entries": {
+    "hero":        { "url": "https://acme.example/collections/sale", "kind": "collection" },
+    "living-room": { "url": "https://acme.example/collections/living-room", "kind": "collection" },
+    "unsubscribe": { "url": "https://acme.example/unsubscribe", "kind": "utility" }
+  }
+}
