@@ -1,0 +1,8 @@
+{
+  "name": "marketing",
+  "version": "1.0.0",
+  "description": "Marketing creative-production skills for Claude Code: remix, remake and resize ads; design emails; clickable email HTML; social posts; briefs; content calendars; brand-kit research and compliance.",
+  "repository": "https://github.com/kalubee/marketing-skills",
+  "license": "MIT",
+  "keywords": ["marketing", "ads", "email", "creative", "brand", "skills"]
+}
