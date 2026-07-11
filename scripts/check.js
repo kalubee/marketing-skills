@@ -60,7 +60,7 @@ if (existsSync(skillsDir)) {
     if (id !== '_TEMPLATE' && name !== id) findings.push(`skills/${id}/SKILL.md: frontmatter name "${name}" != folder name`)
     if (!desc) findings.push(`skills/${id}/SKILL.md: missing description`)
     else if (id !== '_TEMPLATE' && !/use when/i.test(text)) findings.push(`skills/${id}/SKILL.md: no "Use when" trigger`)
-    for (const m of text.matchAll(/(?:\$TOOLS|tools)\/([a-z-]+\.js)/g)) {
+    for (const m of text.matchAll(/(?:\$TOOLS|tools)\/([a-z-]+\.js)(?![a-zA-Z0-9])/g)) {
       if (!existsSync(join(ROOT, 'tools', m[1]))) findings.push(`skills/${id}/SKILL.md: references missing tools/${m[1]}`)
     }
   }
