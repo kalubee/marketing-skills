@@ -1,0 +1,16 @@
+{
+  "_note": "Example preset box library for the design-email skill. Copy into a brand kit as presets.json and adapt. Colour values are palette-token NAMES resolved against the kit's brand.json palette. Geometry assumes a 724px column with 50px margin and 50px gaps.",
+  "colors": {},
+  "styles": {
+    "badge_circle": { "r": 44, "stroke": "sale_accent", "stroke_width": 2, "fill": "bg" },
+    "image_frame": { "stroke": "hairline", "stroke_width": 1, "fill": "band_bg" }
+  },
+  "boxes": {
+    "primary-hero":     { "base": "hero",        "bg": "brand_primary", "height": 360, "_note": "Full-bleed brand-colour hero: headline, subhead, CTA." },
+    "sale-offer-band":  { "base": "offer_band",  "bg": "band_bg", "accent": "sale_accent", "height": 110, "_note": "Offer statement band with accent price/badge." },
+    "four-up-products": { "base": "product_row", "cols": 4, "height": 300, "_note": "Product grid: image, name, price now/was." },
+    "notice-strip":     { "base": "strip",       "height": 48, "_note": "One-line notice (financing, shipping, promo code)." },
+    "standard-footer":  { "base": "footer",      "height": 180, "_note": "Company block, boilerplate, utility links from the kit's footer object." }
+  },
+  "stack": ["hero", "offer_band", "product_row", "strip", "footer"]
+}
