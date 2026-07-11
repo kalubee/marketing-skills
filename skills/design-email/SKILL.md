@@ -189,7 +189,8 @@ after 3 rounds, ship the best version and note what's off in your final summary.
 
 ## Stage 4 — Deliver
 Once the QA loop is clean, produce the JPEG raster alongside the editable SVG:
-`cd $TOOLS && node -e "require('sharp')('<absolute path to output/email.svg>').flatten({background:'#ffffff'}).jpeg({quality:95,chromaSubsampling:'4:4:4'}).toFile('<absolute path to output/email.jpg>').then(()=>console.log('ok'))"`
+`cd $TOOLS && node -e "require('sharp')('<absolute path to output/email.svg>').flatten({background:'#ffffff'}).withMetadata({density:72}).jpeg({quality:95,chromaSubsampling:'4:4:4'}).toFile('<absolute path to output/email.jpg>').then(()=>console.log('ok'))"`
+(matches `encodeFinal`'s JPEG conventions in `tools/lib/imagetools.js`.)
 Deliverables are the files in `output/` (`email.svg` — the editable file the
 human finishes; `email.jpg` — the raster preview; `wireframe.svg` — kept for
 reference). Final message: one line — campaign name, module count, image-

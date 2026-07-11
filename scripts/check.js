@@ -4,6 +4,7 @@
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs'
 import { join, relative, extname, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { execSync } from 'node:child_process'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const SELF = 'scripts/check.js'
@@ -35,13 +36,34 @@ function* walk(dir) {
 for (const f of walk(ROOT)) {
   const rel = relative(ROOT, f.path)
   if (f.size > MAX_BYTES) findings.push(`${rel}: ${Math.round(f.size / 1024)}KB exceeds 500KB cap`)
-  if (rel === SELF || !TEXT_EXT.has(extname(f.path))) continue
+  if (rel === SELF || !TEXT_EXT.has(extname(f.path).toLowerCase())) continue
   const lines = readFileSync(f.path, 'utf8').split('\n')
   for (const re of BANNED) {
     lines.forEach((line, i) => {
       if (re.test(line)) findings.push(`${rel}:${i + 1}: banned pattern ${re} — ${line.trim().slice(0, 80)}`)
     })
   }
+}
+
+// --- 1b. banned content in git history: commit message bodies + author/committer identities ---
+try {
+  execSync('git rev-parse --git-dir', { cwd: ROOT, stdio: 'ignore' })
+
+  const bodies = execSync('git log --all --format=%B', { cwd: ROOT, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 }).split('\n')
+  bodies.forEach((line, i) => {
+    for (const re of BANNED) {
+      if (re.test(line)) findings.push(`git log (commit message body):${i + 1}: banned pattern ${re} — ${line.trim().slice(0, 80)}`)
+    }
+  })
+
+  const identities = execSync('git log --all --format="%an %ae %cn %ce"', { cwd: ROOT, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 }).split('\n')
+  identities.forEach((line, i) => {
+    for (const re of BANNED) {
+      if (re.test(line)) findings.push(`git log (author/committer identity):${i + 1}: banned pattern ${re} — ${line.trim().slice(0, 80)}`)
+    }
+  })
+} catch {
+  // not a git repo (or git unavailable) — skip this check gracefully
 }
 
 // --- 2. skill structure ---

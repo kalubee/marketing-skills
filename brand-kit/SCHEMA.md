@@ -38,6 +38,12 @@ A single JSON object describing the brand's visual and verbal identity. Every
 field below is expected; skills read fields by name and degrade gracefully
 only where noted.
 
+Anywhere in `brand.json` — not just in the sections below that show one as an
+example — a key prefixed with an underscore (such as `_note` or
+`_store_note`) is a free-text aside for whoever is filling in or extending
+the kit: instructions, provenance, TODOs, or context for the next human to
+touch the file. Skills ignore underscore-prefixed keys wherever they appear.
+
 | Field | Type | Required |
 |---|---|---|
 | `id` | string (slug) | yes |
@@ -184,10 +190,9 @@ Font stacks and headline styling:
 - `wordmark` — the text to render as a text-only lockup when no logo asset is
   available. Used as a fallback (or as the only logo treatment, for brands
   that are wordmark-only).
-- Any underscore-prefixed key (such as `_note`) is a free-text aside for
-  whoever is filling in or extending the kit — for example, instructions on
-  where to drop a real logo file and how to prepare it (see `refs/`, below).
-  Skills ignore underscore-prefixed keys.
+- `_note` (see the underscore-prefixed-key convention above) is typically used
+  here for instructions on where to drop a real logo file and how to prepare
+  it (see `refs/`, below).
 
 If a kit supplies an actual logo asset, place it under `refs/` (see below)
 rather than inlining it in `brand.json`; JSON is not the place for binary

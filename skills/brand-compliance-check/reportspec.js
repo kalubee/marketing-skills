@@ -1,10 +1,12 @@
 /**
- * reportspec.js — schema for the `report` object brand-compliance-check writes
- * into its manifest. A review skill produces NO rendered output; the report IS
- * the deliverable, so the engine (manifestSatisfiesOutput, output.kind:report)
- * accepts any manifest whose `report` has a non-empty `summary`. This checker
- * is the stronger, skill-specific bar: a real QA verdict with actionable lists,
- * so the agent can self-check before finishing.
+ * reportspec.js — schema for the `report` object the brand-compliance-check
+ * skill writes to `output/report.json`. This is a review skill: it produces
+ * no rendered creative, no manifest — the report IS the deliverable. This
+ * module defines the bar for a real QA verdict (summary, verdict, and
+ * actionable issue/pass/recommendation lists) so the agent can self-check
+ * its report before finishing. `checkreport.js` in this same directory is
+ * the CLI wrapper: `node checkreport.js output/report.json` reads the file,
+ * runs `validateReport` below, and prints OK or the list of errors.
  */
 
 const VERDICTS = new Set(['on-brand', 'minor-issues', 'off-brand'])

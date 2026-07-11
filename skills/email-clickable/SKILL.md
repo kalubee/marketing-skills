@@ -79,7 +79,8 @@ Write `work/links.json` aligned to `output/slices/slices.json`:
 
 Classic email-safe markup: a single centered `<table>` at the artwork width,
 one `<tr>` per band; multi-cell bands use nested `<td>`s. Each cell is exactly
-`<a href="..."><img src="slices/NN.jpg" width="..." style="display:block;border:0" alt="<label>"></a>`.
+`<a href="..."><img src="slices/NN-<module>.jpg" width="..." style="display:block;border:0" alt="<label>"></a>`
+— use each slice's `file` field from `slices.json` rather than guessing the name.
 No CSS backgrounds, no fonts, no scripts — the slices carry all styling.
 Include `role="presentation"` on tables and meaningful `alt` text per slice.
 
