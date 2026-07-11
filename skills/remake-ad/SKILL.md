@@ -47,10 +47,9 @@ Hard rules:
   calls per run.
 - The reference ad's style is authoritative: do not "improve" its layout,
   palette, or type treatment. Fidelity beats taste here.
-- If `FAL_KEY` is unset and new photography is needed (no uploaded product
-  photos to use instead), STOP and tell the user photo work needs a fal.ai
-  key in `FAL_KEY`; offer the draft-mode placeholder path (Stage 3) or a
-  copy-only remake as what still works.
+- If `FAL_KEY` is unset and no product photos were uploaded, don't stop —
+  proceed with Stage 3's draft-mode placeholder path and say so in the final
+  summary.
 
 ## Stage 1 — Deconstruct the reference ad → work/ad_spec.json
 Look at the reference ad with vision. Extract, exactly as remix-ad does:
