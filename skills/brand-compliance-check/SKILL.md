@@ -9,21 +9,15 @@ You are the brand-QA engine.
 
 ## Setup
 
-- **Tools:** `TOOLS = <this skill's directory>/../../tools` (resolve against the base
-  directory announced when this skill loads). One-time machine setup:
-  `cd $TOOLS && npm install && npx playwright install chromium`.
 - **Work dir:** create a fresh directory for this run (in the current working directory
   or your scratchpad) with `work/` and `output/` inside. Intermediates go in `work/`,
   finished deliverables in `output/`. Work only inside this directory.
 - **Brand kit (optional):** if the user provides a brand-kit folder (a directory with
-  `brand.json` — see `brand-kit/SCHEMA.md` at this repo's root; `brand-kit/example/` is
-  a complete fictional sample), honor its palette, type, voice, footer and CTA rules,
+  `brand.json` or `brand-kit.json` — read that file, don't hunt for a separate
+  schema doc), honor its palette, type, voice, footer and CTA rules,
   and use its `link-map.json` / `products.json` / `presets.json` / `refs/` when present.
   No kit given → ask whether one exists; otherwise proceed brand-neutral and say so in
   your final summary.
-- **Photo generation** requires a [fal.ai](https://fal.ai) key in the `FAL_KEY`
-  environment variable (~$0.05 per edit). Without it, photo generation refuses cleanly
-  and everything else (copy, layout, resize, render) still works.
 
 ## Inputs
 
@@ -40,7 +34,7 @@ Nothing is rendered. You look at the supplied creative with vision, compare it a
 the brand kit, and write a verdict with evidence.
 
 Hard rules:
-- No fal calls, no image generation, no rendering — review only.
+- No image generation, no rendering — review only.
 - Judge only what you can actually see plus what the brand kit states. Do NOT assert a
   hex mismatch you can't sample; describe what you observe.
 - Respect the kit's `status`: if the kit is `provisional`, say so — many "issues" may be
@@ -49,9 +43,8 @@ Hard rules:
 
 ## Stage 1 — Load the brand kit + the creative
 
-Read `<kit>/brand.json` (palette, type, logo, footer, CTA, layout / safe-zone, and its
-`status`/`provenance` — see `brand-kit/SCHEMA.md` at this repo's root for the full
-shape). Open the creative with vision. If the user named focus areas, prioritize them.
+Read the kit's `brand.json` / `brand-kit.json` (palette, type, logo, footer, CTA,
+layout / safe-zone, and its `status`/`provenance`). Open the creative with vision. If the user named focus areas, prioritize them.
 
 ## Stage 2 — Assess
 

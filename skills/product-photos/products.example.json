@@ -1,0 +1,24 @@
+[
+  {
+    "key": "hero_sofa",
+    "name": "Marlowe Sofa",
+    "link": "https://example-store.com/products/marlowe-sofa-slate",
+    "caption": "silo packshot, whatever colour is in stock",
+    "hint": "",
+    "price": "899.00"
+  },
+  {
+    "key": "dining_feature",
+    "name": "Aspen Dining Set",
+    "caption": "use enviro / lifestyle shot in a room",
+    "hint": "",
+    "price": "$300 OFF"
+  },
+  {
+    "key": "bed_a",
+    "name": "Corwin",
+    "caption": "from flyer",
+    "hint": "Queen Bed",
+    "price": "299.88"
+  }
+]

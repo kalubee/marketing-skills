@@ -1,5 +1,9 @@
-node_modules/
 *.log
-work/
-output/
+*.pyc
 .superpowers/
+.venv-rembg/
+__pycache__/
+node_modules/
+output/
+scripts/banned.local.json
+work/

@@ -1,10 +1,9 @@
 {
   "name": "marketing-skills-tools",
+  "version": "0.1.0",
   "private": true,
-  "type": "module",
-  "scripts": { "test": "node --test" },
+  "description": "Shared render/validate tooling for the marketing creative-production skills (design-email, social-post, resize-ad, etc).",
   "dependencies": {
-    "playwright": "^1.61.1",
-    "sharp": "^0.35.3"
+    "sharp": "^0.33.5"
   }
 }

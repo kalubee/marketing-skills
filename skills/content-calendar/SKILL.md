@@ -9,21 +9,15 @@ You are the planning engine.
 
 ## Setup
 
-- **Tools:** `TOOLS = <this skill's directory>/../../tools` (resolve against the base
-  directory announced when this skill loads). One-time machine setup:
-  `cd $TOOLS && npm install && npx playwright install chromium`.
 - **Work dir:** create a fresh directory for this run (in the current working directory
   or your scratchpad) with `work/` and `output/` inside. Intermediates go in `work/`,
   finished deliverables in `output/`. Work only inside this directory.
 - **Brand kit (optional):** if the user provides a brand-kit folder (a directory with
-  `brand.json` — see `brand-kit/SCHEMA.md` at this repo's root; `brand-kit/example/` is
-  a complete fictional sample), honor its palette, type, voice, footer and CTA rules,
+  `brand.json` or `brand-kit.json` — read that file, don't hunt for a separate
+  schema doc), honor its palette, type, voice, footer and CTA rules,
   and use its `link-map.json` / `products.json` / `presets.json` / `refs/` when present.
   No kit given → ask whether one exists; otherwise proceed brand-neutral and say so in
   your final summary.
-- **Photo generation** requires a [fal.ai](https://fal.ai) key in the `FAL_KEY`
-  environment variable (~$0.05 per edit). Without it, photo generation refuses cleanly
-  and everything else (copy, layout, resize, render) still works.
 
 ## Inputs
 

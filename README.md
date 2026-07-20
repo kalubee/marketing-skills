@@ -8,30 +8,29 @@ calendars, brand-kit research — with no host application and no hidden state.
 
 ## What
 
-Ten skills cover the full loop from campaign idea to shippable creative:
+Thirteen skills cover the full loop from campaign idea to shippable creative:
 turning a one-line idea into a brief, building the calendar around it,
 producing ads/emails/social posts, coding a finished email into clickable
-HTML, and checking anything against a brand kit before it ships. Only the
-image-generation paths call out to [fal.ai](https://fal.ai); every other
-capability — copy, layout, resize, render, code, plan — runs with no
-external key at all.
+HTML, fetching real product photography, researching a brand kit, and checking
+anything against that kit before it ships. The creative pipeline is
+SVG-plus-[sharp](https://sharp.pixelplumbing.com) — **no external API key is
+required for any capability.**
 
-| Skill | Purpose | Needs `FAL_KEY`? |
-|---|---|---|
-| `remix-ad` | Regenerate a finished ad's photo per instruction and recomposite native variants at every requested size | Yes, for photo swaps |
-| `remake-ad` | Clone a reference ad's exact style with new copy and imagery | Optional |
-| `resize-ad` | Reformat a finished ad into new channel sizes, rebuilt natively per aspect | Optional (rare extend fallback) |
-| `social-post` | Design native social image posts from a brief — copy spec, per-size HTML, exact-size JPEGs | Optional |
-| `design-email` | Compose an on-brand marketing email from a brief as editable SVG + JPEG | No |
-| `email-clickable` | Turn a finished flat email image into deployable, table-based clickable HTML | No |
-| `brief-builder` | Turn a terse campaign idea into a structured design brief with headline/offer options | No |
-| `content-calendar` | Build a dated, validated content calendar from a campaign goal | No |
-| `brand-ingest` | Research a brand's public site and propose a starting brand-kit `brand.json` | No |
-| `brand-compliance-check` | Vision-QA a creative against a brand kit — on-brand / minor-issues / off-brand verdict | No |
-
-No `FAL_KEY`? Every non-generative capability still works: briefs, calendars,
-resizes and layout variants, email design and coding, and brand QA all run
-with zero external keys. Only new or swapped photography needs one.
+| Skill | Purpose |
+|---|---|
+| `design-email` | Compose an on-brand marketing email from a brief — wireframe for approval, then a same-zoom rebuild to the brand's reference creative, as editable SVG + JPEG |
+| `email-clickable` | Turn a finished flat email image into deployable, table-based clickable HTML |
+| `remix-ad` | Deconstruct a finished ad, swap its photography for new real shots, recomposite native variants at every requested size |
+| `remake-ad` | Clone a reference ad's exact style with new copy and imagery |
+| `resize-ad` | Reformat a finished ad into new channel sizes, rebuilt natively per aspect |
+| `social-post` | Design native social image posts from a brief — copy spec, per-size SVG, exact-size JPEGs |
+| `product-photos` | Fetch real product photos from a brand's own storefront — silo + lifestyle shots, optional background cutout |
+| `brief-builder` | Turn a terse campaign idea into a structured design brief with headline/offer options |
+| `content-calendar` | Build a dated, validated content calendar from a campaign goal |
+| `brand-ingest` | Research a brand's public site and propose a starting brand-kit `brand.json` |
+| `brand-compliance-check` | Vision-QA a creative against a brand kit — on-brand / minor-issues / off-brand verdict |
+| `graphify` | Index a project (skills + brand kits) into a queryable knowledge graph |
+| `Scrapling-Skill` | Scrape/crawl web pages with anti-bot bypass — the fetch engine under `brand-ingest` |
 
 ## Install
 
@@ -46,25 +45,32 @@ Working from a local checkout instead of GitHub:
 /plugin marketplace add /path/to/marketing-skills
 ```
 
-Skills are then available as `marketing:<skill>`, e.g. `marketing:remix-ad`.
+Skills are then available as `marketing:<skill>`, e.g. `marketing:design-email`.
 
 ## One-time setup
 
-The skills share one tools package. Install it once per machine:
+The creative skills share one tools package. Install it once per machine:
 
 ```
-cd tools && npm install && npx playwright install chromium
+cd tools && npm install
 ```
 
-Optionally, enable photo generation and photo swaps:
+That installs `sharp` (the SVG→JPEG rasterizer) — no browser or API key needed
+for the creative pipeline.
 
-```
-export FAL_KEY=...
-```
+**Fonts.** `design-email` renders live `<text>` and rasterizes it, so the font
+must be installed locally to match a brand's look. The bundled examples use
+**Open Sans** — install it (Debian/Ubuntu: `sudo apt-get install fonts-open-sans`;
+macOS: `brew install --cask font-open-sans`) or the raster falls back to a
+system sans and won't match the reference. A brand kit can specify any installed
+font stack.
 
-Get a key at [fal.ai](https://fal.ai); image edits cost roughly $0.05 each.
-Without `FAL_KEY`, photo generation refuses cleanly and every other
-capability — copy, layout, resize, render — still works.
+**Optional extras** (only for the skills that use them):
+
+- `product-photos` background cutout uses Python `rembg`:
+  `python3 -m venv tools/.venv-rembg && tools/.venv-rembg/bin/pip install rembg pillow onnxruntime`
+- `Scrapling-Skill` (and the deep-scrape path of `brand-ingest`) uses the
+  Scrapling library: `pip install "scrapling[all]>=0.4.10" && scrapling install`
 
 ## Brand kits
 
@@ -72,16 +78,28 @@ Skills that produce branded deliverables accept an optional **brand kit**: a
 folder with a `brand.json` (palette, type, voice, links) that any skill reads
 the same way. See `brand-kit/SCHEMA.md` for the full schema and
 `brand-kit/example/` for a complete fictional sample (used only to document
-the format and give skills something real to run against). Real brand kits —
-a company's actual colors, fonts, copy, and links — don't belong in this
-repo; keep them in a private repo or folder and pass the path when you run a
-skill.
+the format and give skills something real to run against).
+
+For the highest-fidelity output, a brand kit can also carry **reference
+creatives** (a brand's actual finished emails/ads) and **extracted brand assets**
+(the real logo, icons, and decorative art lifted from those references).
+`design-email` rebuilds toward those references at matching zoom and composites
+the real assets rather than drawing stand-ins — that is what makes an output
+read as a real send instead of a prototype.
+
+Real brand kits — a company's actual colors, fonts, copy, links, reference
+creatives, and assets — don't belong in this public repo; keep them in a
+private repo or folder and pass the path when you run a skill.
 
 ## Design principles
 
 - **Copy is burned from spec, never model-drawn.** Rendered text in an ad or
   email always comes from a validated spec file through the render pipeline
-  — a model never draws the words onto the image.
+  — a model never draws the words onto the image, and a mechanical grep
+  re-checks every price/name/date against the spec before hand-off.
+- **Rebuild to the reference, don't recolour a wireframe.** Where a brand has a
+  reference creative, the styled pass reproduces its real grammar and composites
+  its real artwork, iterating on same-zoom crops until indistinguishable.
 - **Native per-aspect layout, no scaling.** Each output size gets its own
   layout pass instead of a single design stretched or shrunk to fit.
 - **Vision QA loops.** Generated imagery and finished renders are checked

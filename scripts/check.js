@@ -10,15 +10,18 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const SELF = 'scripts/check.js'
 const findings = []
 
-// --- 1. banned content: client names, people, origin, addresses, key shapes ---
+// --- 1. banned content: generic secret shapes (public) + project-specific
+// client/person/origin terms loaded from an UNTRACKED scripts/banned.local.json
+// so the sensitive term list never ships in this public repo. Each entry is
+// { "pattern": "<regex source>", "flags": "i" }. If the local file is absent
+// (e.g. a fresh clone or CI), only the generic secret-shape patterns run. ---
 const BANNED = [
-  /dufresne/i, /\barctic\b/i, /sleep\s*shop/i, /mackenzie/i,
-  /tenth(and|\s*(and|&)\s*)maple/i,
-  /\balyssa\b/i, /\bleanne\b/i, /\bviolet\b/i, /\bDom\b/, /\bepsilon\b/i, /\bdrsg\b/i,
-  /kaleb/i, /reimer/i, /winnipeg/i, /commerce\s+dr/i,
-  /piper/i, /scrapling/i, /009a44/i, /00b050/i,
   /\bgho_[A-Za-z0-9]{8,}/, /\bsk-[A-Za-z0-9]{8,}/, /\bghp_[A-Za-z0-9]{8,}/,
 ]
+try {
+  const local = JSON.parse(readFileSync(join(ROOT, 'scripts/banned.local.json'), 'utf8'))
+  for (const { pattern, flags } of local) BANNED.push(new RegExp(pattern, flags ?? 'i'))
+} catch { /* no local term list — generic secret-shape patterns only */ }
 const TEXT_EXT = new Set(['.md', '.js', '.json', '.txt', '.html', '.svg', '.yml', '.yaml', '.sh'])
 const SKIP_DIRS = new Set(['.git', 'node_modules', '.superpowers'])
 const MAX_BYTES = 500 * 1024
@@ -36,7 +39,7 @@ function* walk(dir) {
 for (const f of walk(ROOT)) {
   const rel = relative(ROOT, f.path)
   if (f.size > MAX_BYTES) findings.push(`${rel}: ${Math.round(f.size / 1024)}KB exceeds 500KB cap`)
-  if (rel === SELF || !TEXT_EXT.has(extname(f.path).toLowerCase())) continue
+  if (rel === SELF || rel === 'scripts/banned.local.json' || !TEXT_EXT.has(extname(f.path).toLowerCase())) continue
   const lines = readFileSync(f.path, 'utf8').split('\n')
   for (const re of BANNED) {
     lines.forEach((line, i) => {

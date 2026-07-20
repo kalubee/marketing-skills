@@ -9,21 +9,15 @@ You are the brand-research engine.
 
 ## Setup
 
-- **Tools:** `TOOLS = <this skill's directory>/../../tools` (resolve against the base
-  directory announced when this skill loads). One-time machine setup:
-  `cd $TOOLS && npm install && npx playwright install chromium`.
 - **Work dir:** create a fresh directory for this run (in the current working directory
   or your scratchpad) with `work/` and `output/` inside. Intermediates go in `work/`,
   finished deliverables in `output/`. Work only inside this directory.
 - **Brand kit (optional):** if the user provides a brand-kit folder (a directory with
-  `brand.json` — see `brand-kit/SCHEMA.md` at this repo's root; `brand-kit/example/` is
-  a complete fictional sample), honor its palette, type, voice, footer and CTA rules,
+  `brand.json` or `brand-kit.json` — read that file, don't hunt for a separate
+  schema doc), honor its palette, type, voice, footer and CTA rules,
   and use its `link-map.json` / `products.json` / `presets.json` / `refs/` when present.
   No kit given → ask whether one exists; otherwise proceed brand-neutral and say so in
   your final summary.
-- **Photo generation** requires a [fal.ai](https://fal.ai) key in the `FAL_KEY`
-  environment variable (~$0.05 per edit). Without it, photo generation refuses cleanly
-  and everything else (copy, layout, resize, render) still works.
 
 You never browse the web yourself — the scrape tool fetches pages for you, and you
 reason over the JSON it returns.
@@ -34,18 +28,19 @@ Gather from the user: the brand's website URL, a short brand id/slug to name the
 proposal with, and any notes on facts they've already confirmed (a hex code, a font
 name, exact footer copy) that should outrank whatever the scrape turns up.
 
-The job: point `$TOOLS/scrape.js` at a brand's public website and get back a **draft
-brand kit** in the same shape as `brand-kit/SCHEMA.md`, with the evidence for every
-value. This is how a starting kit gets bootstrapped without waiting on a brand-guide
+The job: crawl a brand's public website with the **`Scrapling-Skill`** and turn what
+comes back into a **draft brand kit** in the standard kit shape (Stage 2 lists the
+fields; an installed kit's `brand-kit.json` under the vault's `3-Resources/Brands/`
+is a live reference if one exists), with the evidence for every value. This is how a starting kit gets bootstrapped without waiting on a brand-guide
 PDF.
 
 Hard rules:
 - **Propose, never install.** Write the draft to `output/brand.json`. NEVER write into
   an existing brand kit — the user reviews and installs it themselves. A kit drafted
   from a scrape is `"status": "provisional"` by definition.
-- Scrape ONLY through `node $TOOLS/scrape.js <url> <out.json>` — at most 5 pages per
-  run, all on the SAME registrable domain as the brand's URL. No other network access,
-  no crawling beyond those pages.
+- Scrape ONLY through the **`Scrapling-Skill`** (it handles fetching, JS rendering, and
+  anti-bot bypass) — at most 5 pages per run, all on the SAME registrable domain as the
+  brand's URL. No other network access, no crawling beyond those pages.
 - The user's notes (facts they already confirmed) always outrank scraped signals.
   Record where every value came from.
 - If a fetch fails or is blocked, note it and work with what you have rather than
@@ -53,17 +48,19 @@ Hard rules:
 
 ## Stage 1 — Scrape
 
-`node $TOOLS/scrape.js <url> work/page_home.json`
-Read the JSON (keys: `url`, `title`, `meta`, `headings`, `nav_links`, `footer_links`,
-`images`, `icons`, `color_hints`, `text_sample`). From `nav_links`/`footer_links`, pick
+Fetch the homepage with the `Scrapling-Skill` and normalize what you extract into
+`work/page_home.json` with these keys: `url`, `title`, `meta`, `headings`, `nav_links`,
+`footer_links`, `images`, `icons`, `color_hints` (hexes harvested from inline styles and
+linked CSS, with occurrence counts), `text_sample`. Keep that shape for every page — the
+later stages read it. From `nav_links`/`footer_links`, pick
 up to 4 more same-domain pages that likely carry brand truth — an about/brand page, a
 product or collection page, and a contact/footer-heavy page are the highest-value picks
 — and scrape each to `work/page_NN.json`. Tell the user each URL as you go.
 
 ## Stage 2 — Distill → output/brand.json
 
-Build `output/brand.json` in the shape of `brand-kit/SCHEMA.md` (read
-`brand-kit/example/brand.json` as the reference — same keys):
+Build `output/brand.json` with these keys (same shape as an installed kit's
+`brand-kit.json`):
 - `id` = the brand slug given, `name` from `meta.og_site_name`/`title`, `status`:
   `"provisional"`.
 - `palette`: from `color_hints` (a hex→frequency map) — the dominant non-neutral hex
@@ -75,13 +72,13 @@ Build `output/brand.json` in the shape of `brand-kit/SCHEMA.md` (read
 - `footer`: company line, address, and standard links as found in
   `footer_links`/`text_sample`.
 - `type` + `cta`: whatever the pages reveal (heading casing, button styles implied by
-  `color_hints`); mark unknowns with a `_note` rather than guessing silently. Per
-  `brand-kit/SCHEMA.md`, `type`'s font stacks must be self-contained (system fonts or
-  generics) — if the site uses a webfont, name the closest self-contained substitute
+  `color_hints`); mark unknowns with a `_note` rather than guessing silently.
+  `type`'s font stacks must be self-contained (system fonts or generics) — if the site uses a webfont, name the closest self-contained substitute
   here and record the intended webfont in `provenance`.
 - `email_layout` and `store`: the site itself won't reveal these reliably — use the
-  schema's documented defaults for `email_layout` and `store: null` unless a storefront
-  platform is evident, and note in `provenance` that they're unconfirmed placeholders.
+  generic defaults for `email_layout` (`width_px` 724, `margin_px` 50,
+  `module_gap_px` 50) and `store: null` unless a storefront platform is evident, and
+  note in `provenance` that they're unconfirmed placeholders.
 - `provenance`: one paragraph — which pages, what came from where, what the user's
   notes overrode, what is still unverified.
 
