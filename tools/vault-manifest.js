@@ -27,8 +27,9 @@ const VAULT = path.resolve(arg('vault', '.'));
 const OUT = path.resolve(arg('out', path.join(VAULT, 'ASSETS.json')));
 const CHECK = has('check');
 
-// Regenerable wholesale by another skill — listing every file would be noise.
-const SKIP_PREFIX = ['graphify-out/'];
+// Not worth inventorying: regenerated wholesale by another skill, or local
+// editor state nobody restores.
+const SKIP_PREFIX = ['graphify-out/', '.obsidian/'];
 
 const sha = f => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex').slice(0, 16);
 
@@ -40,10 +41,14 @@ function origin(rel) {
   return 'manual';
 }
 
-// Group by brand kit where possible, so the report reads per-brand.
+// Group by brand kit where possible, else by project/area folder — a restore
+// is done a directory at a time, so the grouping should match how the user
+// will actually drag files back in.
 function group(rel) {
-  const m = /^(.*Brands\/[^/]+)\//.exec(rel);
-  return m ? m[1] : '(vault)';
+  const brand = /^(.*Brands\/[^/]+)\//.exec(rel);
+  if (brand) return brand[1];
+  const parts = rel.split('/');
+  return parts.length > 2 ? parts.slice(0, 2).join('/') : (parts.length > 1 ? parts[0] : '(vault root)');
 }
 
 function ignoredFiles() {
@@ -71,8 +76,11 @@ if (CHECK) {
     console.log('\nMISSING:');
     for (const g of Object.keys(by).sort()) {
       const rescrape = by[g].filter(f => f.origin === 'rescrape').length;
-      console.log(`  ${g}  (${by[g].length} file(s)${rescrape ? `, ${rescrape} re-scrapable` : ''})`);
-      for (const f of by[g].slice(0, 12)) console.log(`      [${f.origin}] ${path.basename(f.path)}  ${(f.bytes / 1048576).toFixed(1)}MB`);
+      const mb = by[g].reduce((s, f) => s + f.bytes, 0) / 1048576;
+      console.log(`  ${g}/  (${by[g].length} file(s), ${mb.toFixed(1)}MB${rescrape ? `, ${rescrape} re-scrapable` : ''})`);
+      // Show the path RELATIVE TO THE GROUP, never just the basename — the
+      // destination is the whole point of a restore report.
+      for (const f of by[g].slice(0, 12)) console.log(`      [${f.origin}] ${f.path.slice(g.length + 1)}  ${(f.bytes / 1048576).toFixed(1)}MB`);
       if (by[g].length > 12) console.log(`      ... and ${by[g].length - 12} more`);
     }
   }
