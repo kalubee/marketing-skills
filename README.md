@@ -8,11 +8,12 @@ calendars, brand-kit research — with no host application and no hidden state.
 
 ## What
 
-Thirteen skills cover the full loop from campaign idea to shippable creative:
+Fourteen skills cover the full loop from campaign idea to shippable creative:
 turning a one-line idea into a brief, building the calendar around it,
 producing ads/emails/social posts, coding a finished email into clickable
-HTML, fetching real product photography, researching a brand kit, and checking
-anything against that kit before it ships. The creative pipeline is
+HTML, fetching real product photography, researching a brand kit, checking
+anything against that kit before it ships, and hydrating a brand-kit vault on a
+new machine. The creative pipeline is
 SVG-plus-[sharp](https://sharp.pixelplumbing.com) — **no external API key is
 required for any capability.**
 
@@ -31,6 +32,7 @@ required for any capability.**
 | `brand-compliance-check` | Vision-QA a creative against a brand kit — on-brand / minor-issues / off-brand verdict |
 | `graphify` | Index a project (skills + brand kits) into a queryable knowledge graph |
 | `Scrapling-Skill` | Scrape/crawl web pages with anti-bot bypass — the fetch engine under `brand-ingest` |
+| `vault-setup` | Hydrate a freshly cloned brand-kit vault — re-fetch catalogs exhaustively, report what's missing |
 
 ## Install
 
@@ -46,6 +48,22 @@ Working from a local checkout instead of GitHub:
 ```
 
 Skills are then available as `marketing:<skill>`, e.g. `marketing:design-email`.
+
+### Claude cowork
+
+Cowork takes skills as individual zips rather than a plugin. Prebuilt ones live
+in [`dist/`](dist/) — one per skill, plus `tools.zip` for the shared toolchain
+that several skills shell out to. Upload the skills you need and `tools.zip`
+alongside them.
+
+Rebuild after changing a skill:
+
+```
+bash scripts/build-zips.sh
+```
+
+It runs `scripts/check.js` first and refuses to package if the gate fails, so a
+zip can only ever contain content that already passed the sanitization sweep.
 
 ## One-time setup
 

@@ -66,8 +66,11 @@ region out of the original with `sharp` in ONE node process driven by
 `work/slice-map.json`, so every slice's box comes from the same numbers the HTML will
 use and you don't pay a process startup per slice (a full-width module uses
 `left:0, right:<image width>`):
-`cd $TOOLS && node -e "const s=require('sharp');const m=require('<abs work/slice-map.json>');(async()=>{for(const b of m.bands){for(const c of (b.cells||[{key:b.key,left:0,right:m.width}])){const box={left:c.left,top:b.top,width:c.right-c.left,height:b.bottom-b.top};await s('<abs image>').extract(box).png().toFile('<abs output/slices>/'+c.key+'.png');console.log(c.key,box.width+'x'+box.height)}}})()"` **Never re-encode or retouch the pixels — extract
-only; the image is the design.**
+`cd $TOOLS && node -e "const s=require('sharp');const m=require('<abs work/slice-map.json>');(async()=>{for(const b of m.bands){for(const c of (b.cells||[{key:b.key,left:0,right:m.width}])){const box={left:c.left,top:b.top,width:c.right-c.left,height:b.bottom-b.top};await s('<abs image>').extract(box).withMetadata({density:72}).png().toFile('<abs output/slices>/'+c.key+'.png');console.log(c.key,box.width+'x'+box.height)}}})()"` **Never re-encode or retouch the pixels — extract
+only; the image is the design.** Every slice is stamped `density: 72` (screen
+resolution) regardless of the source image's own metadata — email clients that
+read DPI (rather than treating images as raw pixels) must never see a print
+density (300 etc.) leak through.
 Then LOOK at every slice; if a cut clips content, fix the map and re-slice.
 
 ## Stage 2 — Resolve links
@@ -85,26 +88,68 @@ For each slice, in order of preference:
      "$KIT/link-map.json"`
    Zero hits → fall through to catalog. Multiple hits → pick the closest label match,
    never guess past two ambiguous candidates (send to `needs_review` instead).
-2. **catalog** — query `products.json` for a name matching the product shown (match
-   conservatively; wrong product = wrong money page):
+2. **catalog** — query `products.json` (match conservatively; wrong product = wrong
+   money page). If the slice shows a visible product/model number or SKU (common on
+   appliance and furniture ads), try that first — it's an exact match, far more
+   reliable than name text, and worth checking even when a name match also exists:
+   `jq --arg q "<the number, exact>" \
+     '[.[] | select(.model_number==$q or (.skus // [] | index($q)))]' "$KIT/products.json"`
+   No number visible, or zero hits → fall back to a name match:
    `jq --arg q "<product name/keyword from the slice, e.g. the model name shown>" \
      '[.[] | select(.name|test($q;"i"))]' "$KIT/products.json"`
    Narrow the query (fuller product name) before broadening it — a query returning
    more than ~10 hits is too generic to trust; tighten it rather than reading them all.
-3. **user** — links the user pasted.
-4. **fallback** — the brand homepage, plus a `needs_review` entry.
+3. **user** — links the user pasted upfront.
+4. **ask** — before falling back, ask about whatever's still unresolved. Batch
+   every such slice into one message (never one question per slice): list each
+   by label/key and offer to either paste the correct URL or reply to send it
+   to the homepage instead. Apply whatever they answer per slice; anything
+   they explicitly punt on (say homepage, or don't answer) still gets a
+   `needs_review` entry so it's visible in your final summary.
+5. **fallback** — for a fully non-interactive run, or slices the user punted
+   on in step 4, the brand homepage plus a `needs_review` entry. Prefer a
+   `"homepage"` entry in `link-map.json` if the kit has one (some trimmed kits
+   carry only `link-map.json` + `products.json`, no `brand-kit.json`); otherwise
+   read the kit file's `store.base_url` / `website`.
 
 Write `work/links.json` aligned to `output/slices/slices.json`:
 `[{ "n": 1, "href": "...", "source": "map|catalog|user|fallback" }, ...]`
 
 ## Stage 3 — Author output/email.html
 
-Classic email-safe markup: a single centered `<table>` at the artwork width,
-one `<tr>` per band; multi-cell bands use nested `<td>`s. Each cell is exactly
+Classic email-safe markup: a single `<table align="center" role="presentation">`
+at the artwork width, one `<tr>` per band; multi-cell bands use nested `<td>`s.
+Each cell is exactly
 `<a href="..."><img src="slices/NN-<module>.jpg" width="..." style="display:block;border:0" alt="<label>"></a>`
 — use each slice's `file` field from `slices.json` rather than guessing the name.
-No CSS backgrounds, no fonts, no scripts — the slices carry all styling.
-Include `role="presentation"` on tables and meaningful `alt` text per slice.
+No CSS backgrounds, no custom fonts, no scripts on the artwork itself — the
+slices carry all visual styling. Include meaningful `alt` text per slice.
+
+Required document boilerplate (structural client-compatibility markup, not
+decoration — always include, every brand, every run):
+
+In `<head>`, immediately after the charset meta tag:
+
+    <meta name="format-detection" content="telephone=no">
+    <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=no;">
+    <meta http-equiv="X-UA-Compatible" content="IE=9; IE=8; IE=7; IE=EDGE" />
+    <style type="text/css">
+    @media screen and (max-width:480px) {
+      table { width: 100%!important; }
+    }
+    </style>
+
+Immediately inside the opening `<table>`, before the first content row:
+
+    <tr><td align="center" colspan="12" style="font-size: small; color:#000000">Having trouble viewing this email? <webversion>View it in your browser.</webversion></td></tr>
+
+Immediately before the closing `</table>`:
+
+    <tr><td align="center" colspan="12">If you no longer wish to receive emails from us, <unsubscribe>unsubscribe here</unsubscribe>.</td></tr>
+
+`<webversion>`/`<unsubscribe>` are ESP merge tags, not real hrefs — leave them
+as literal tags for the ESP to substitute at send time; never resolve them
+through the link map or flag them `needs_review`.
 
 ## Stage 4 — QA
 
@@ -122,6 +167,10 @@ Verify the slice geometry instead — which is what actually breaks:
    real dimensions — read them back with `sharp().metadata()`, don't trust the map.
 3. **LOOK at `work/reassembled.png`** next to the original with vision: identical
    composition, no gaps, no doubled borders.
+4. **Resolution check.** Every exported slice must read back `density: 72`
+   (`sharp('<slice>').metadata()`) — screen resolution, not a print density
+   inherited from the source file. Re-slice with `withMetadata({density:72})`
+   if any slice reports otherwise.
 Fix the map, re-slice, and re-diff until clean (≤3 rounds). Note in your summary that
 the HTML was verified by slice-reassembly, not by a browser render — an ESP/inbox
 preview is still worth a human's eyes before send.
